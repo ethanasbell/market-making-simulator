@@ -2,3 +2,11 @@ venv/
 __pycache__/
 *.pyc
 .env
+# macOS system files
+.DS_Store
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Any extra CSVs floating in the root (if you only want them in /data)
+..data*.csv
