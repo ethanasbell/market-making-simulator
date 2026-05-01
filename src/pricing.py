@@ -17,7 +17,7 @@ HESTON_PARAMS = {
 }
 
 
-def d_calculator(S, K, t, r, q, sigma):
+def d_calculator(S, K, T, r, q, sigma):
     """ This function creates the d_1 and d_2 values needed for Black-Scholes.
     Args:
         S = Spot price
@@ -219,3 +219,27 @@ def heston_vega(S, K, T, r, q, kappa, theta, sigma, rho, v0, eps=1e-4):
 
     return (price_up - price_down) / (2 * eps)
 
+def bs_delta(S, K, t, r, q, sigma, flag):
+    """
+    BS delta for hedging. Uses Merton continuous dividend extension.
+    flag: 'Call' or 'Put'
+    """
+    d1, _ = d_calculator(S, K, t, r, q, sigma)
+    if np.isnan(d1):
+        return np.nan
+    if flag == 'Call':
+        return np.exp(-q * t) * norm.cdf(d1)
+    else:
+        return -np.exp(-q * t) * norm.cdf(-d1)
+
+def heston_iv(S, K, T, r, q, kappa, theta, sigma, rho, v0, flag):
+    """
+    Computes Heston implied vol by pricing with calibrated Heston params,
+    then inverting through BS to express in IV terms.
+    """
+    if flag == 'Call':
+        heston_price = heston_call(S, K, T, r, q, kappa, theta, sigma, rho, v0)
+    else:
+        heston_price = heston_put(S, K, T, r, q, kappa, theta, sigma, rho, v0)
+
+    return bs_iv(heston_price, S, K, T, r, q, flag)
